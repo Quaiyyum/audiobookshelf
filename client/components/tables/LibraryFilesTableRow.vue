@@ -68,6 +68,12 @@ export default {
           action: 'more'
         })
       }
+      if (this.userIsAdmin && this.file.fileType === 'image') {
+        items.push({
+          text: this.$strings.LabelUseCoverArt || 'Use as cover',
+          action: 'use-as-cover'
+        })
+      }
       return items
     }
   },
@@ -79,6 +85,8 @@ export default {
         this.downloadLibraryFile()
       } else if (action === 'more') {
         this.$emit('showMore', this.file.audioFile)
+      } else if (action === 'use-as-cover') {
+        this.useAsCover()
       }
     },
     deleteLibraryFile() {
@@ -100,6 +108,17 @@ export default {
         type: 'yesNo'
       }
       this.$store.commit('globals/setConfirmPrompt', payload)
+    },
+    useAsCover() {
+      this.$axios
+        .$patch(`/api/items/${this.libraryItemId}/cover`, { cover: this.file.metadata.path })
+        .then(() => {
+          this.$toast.success('Cover updated')
+        })
+        .catch((error) => {
+          console.error('Failed to set cover', error)
+          this.$toast.error('Failed to update cover')
+        })
     },
     downloadLibraryFile() {
       this.$downloadFile(this.downloadUrl, this.file.metadata.filename)
